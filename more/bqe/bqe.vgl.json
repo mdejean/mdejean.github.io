@@ -1,0 +1,135 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Travel time on I-278 before and after lane reduction, by month and time of day",
+  "config": {
+    "facet": {
+      "cell": {
+        "height": 200,
+        "width": 200
+      }
+    }
+  },
+  "data": {
+    "url": "bqe_agg.csv",
+    "format": {
+        "parse": {"h": "date:'%H'"}
+    }
+  },
+  "transform": [
+    {
+      "filter": "datum.ym > 1514782800000"
+    },
+    {
+      "filter": "slice(datum.link_name,0,3) != 'BRP'"
+    },
+    {
+      "calculate": "datum.ym > 1630296000000",
+      "as": "project"
+    },
+    {
+      "calculate": "datum.travel_50 / 60",
+      "as": "travel_50_min"
+    },
+    {
+      "calculate": "if(datum.weekend == 0, 'Weekday', 'Weekend')",
+      "as": "weekend_text"
+    }
+  ],
+  "params": [
+    {
+      "name": "hover",
+      "select": {
+        "type": "point",
+        "fields": [
+          "ym"
+        ],
+        "on": "mouseover",
+        "nearest": false
+      }
+    }
+  ],
+  "vconcat": [
+    {
+      "columns": 2,
+      "facet": {
+        "field": "link_name",
+        "sort": [
+          "GOW N 9TH STREET - ATLANTIC AVENUE",
+          "BQE S LEONARD STREET - ATLANTIC AVENUE",
+          "BQE N ATLANTIC AVENUE - LEONARD STREET",
+          "BQE S - GOW S ALTANTIC AVENUE - 9TH STREET",
+          "BQE N Atlantic Ave - BKN Bridge Manhattan Side",
+          "BQE N Atlantic Ave - MAN Bridge Manhattan Side"
+        ],
+        "header": {
+          "title": "Travel time on I-278 before and after August 2021 lane reduction"
+        }
+      },
+      "spec": {
+        "encoding": {
+          "color": {
+            "field": "project",
+            "scale": {
+              "range": [
+                "black",
+                "red"
+              ]
+            },
+            "legend": {
+              "title": "Lane reduction"
+            }
+          },
+          "detail": {
+            "field": "ym",
+            "type": "temporal"
+          },
+          "x": {
+            "field": "h",
+            "type": "temporal",
+            "scale": {
+                "nice": true
+            },
+            "axis": {
+              "formatType": "time",
+              "format": "%-I%p",
+              "title": "Hour of day"
+            }
+          },
+          "y": {
+            "field": "travel_50_min",
+            "scale": {
+              "nice": false,
+              "type": "log"
+            },
+            "type": "quantitative",
+            "axis": {
+              "title": "Median travel time (minutes)"
+            }
+          },
+          "facet": {
+            "field": "weekend_text",
+            "header": {
+              "title": null
+            }
+          },
+          "opacity": {
+            "value": 0.2,
+            "condition": {
+              "param": "hover",
+              "empty": false,
+              "opacity": 1
+            }
+          },
+          "tooltip": {
+            "field": "ym",
+            "formatType": "time",
+            "format": "%Y-%b"
+          }
+        },
+        "mark": {
+          "type": "line"
+        }
+      }
+    }
+  ]
+}
