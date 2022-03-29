@@ -15,6 +15,28 @@
         "parse": {"h": "date:'%H'"}
     }
   },
+  "params": [
+    {
+      "name": "hover",
+      "select": {
+        "type": "point",
+        "fields": [
+          "ym"
+        ],
+        "on": "mouseover",
+        "nearest": false
+      }
+    },
+    {
+        "name": "y_field",
+        "value": "travel_50_min",
+        "bind": {"input": "radio", "options": ["travel_50_min", "speed_50"], "labels": ["Travel time", "Speed"]}
+    },
+    {
+        "name": "y_title",
+        "expr": "if(y_field == 'speed_50', 'Median speed (mph)', 'Median travel time (minutes)')"
+    }
+  ],
   "transform": [
     {
       "filter": "datum.ym > 1514782800000"
@@ -33,19 +55,10 @@
     {
       "calculate": "if(datum.weekend == 0, 'Weekday', 'Weekend')",
       "as": "weekend_text"
-    }
-  ],
-  "params": [
+    },
     {
-      "name": "hover",
-      "select": {
-        "type": "point",
-        "fields": [
-          "ym"
-        ],
-        "on": "mouseover",
-        "nearest": false
-      }
+      "calculate": "datum[y_field]",
+      "as": "y"
     }
   ],
   "vconcat": [
@@ -96,14 +109,16 @@
             }
           },
           "y": {
-            "field": "travel_50_min",
+            "field": "y",
             "scale": {
               "nice": false,
               "type": "log"
             },
             "type": "quantitative",
             "axis": {
-              "title": "Median travel time (minutes)"
+                "title": {
+                    "expr": "y_title"
+                }
             }
           },
           "facet": {
